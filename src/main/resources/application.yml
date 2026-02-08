@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  jackson:
+    time-zone: Asia/Seoul
+
+  datasource:
+    url: ${MAIN_DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # DB 커넥션 풀 설정 (ms)
+    hikari:
+      # 최대 커넥션 수
+      maximum-pool-size: 15
+      # 최소 커넥션 수
+      minimum-idle: 10
+      # 커넥션 대기 시간 (1초)
+      connection-timeout: 1000
+      # 최대 유지 시간 (30분)
+      max-lifetime: 1800000
+      # 최소 유휴 시간 (1분)
+      idle-timeout: 600000
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+
+jwt:
+  private-key: ${JWT_PRIVATE_KEY}
+  public-key: ${JWT_PUBLIC_KEY}
+  access-token:
+    expiration: ${JWT_ACCESS_EXPIRATION}
+  refresh-token:
+    expiration: ${JWT_REFRESH_EXPIRATION}
