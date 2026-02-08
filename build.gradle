@@ -19,8 +19,29 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Google Authentification
+    implementation 'com.google.api-client:google-api-client:2.8.1'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.42.0-rc1'
+
+    // lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Database
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.7'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.7'
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
