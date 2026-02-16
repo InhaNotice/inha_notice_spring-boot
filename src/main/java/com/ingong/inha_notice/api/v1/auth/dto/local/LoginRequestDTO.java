@@ -13,7 +13,7 @@ package com.ingong.inha_notice.api.v1.auth.dto.local;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginRequest(
+public record LoginRequestDTO(
     @NotBlank
     @Email
     String email,
