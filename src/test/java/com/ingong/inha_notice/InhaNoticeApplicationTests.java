@@ -1,13 +1,13 @@
-package com.ingong.inhanotice;
+package com.ingong.inha_notice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class InhanoticeApplicationTests {
+class InhaNoticeApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+  @Test
+  void contextLoads() {
+  }
 
 }

@@ -8,7 +8,7 @@
  * Latest Updated Date: 2026-02-08
  */
 
-package com.ingong.inhanotice;
+package com.ingong.inha_notice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,9 +16,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class InhanoticeApplication {
+public class InhaNoticeApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(InhanoticeApplication.class, args);
+    SpringApplication.run(InhaNoticeApplication.class, args);
   }
 }
