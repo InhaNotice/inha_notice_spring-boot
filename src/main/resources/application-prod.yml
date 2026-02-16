@@ -10,6 +10,6 @@ spring:
 logging:
   level:
     root: WARN
-    com.ingong.inhanotice: INFO
+    com.ingong.inha_notice: INFO
     org.springframework.web: WARN
     org.hibernate: WARN
