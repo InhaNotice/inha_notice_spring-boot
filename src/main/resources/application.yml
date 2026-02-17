@@ -42,3 +42,8 @@ jwt:
     expiration: ${JWT_ACCESS_EXPIRATION}
   refresh-token:
     expiration: ${JWT_REFRESH_EXPIRATION}
+
+security:
+  password:
+    bcrypt-strength: 12
+    pepper: ${PASSWORD_PEPPER}
