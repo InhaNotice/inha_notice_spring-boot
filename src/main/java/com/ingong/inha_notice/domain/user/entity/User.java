@@ -8,10 +8,10 @@
  * Latest Updated Date: 2026-02-17
  */
 
-package com.ingong.inha_notice.domain.user.domain.entity;
+package com.ingong.inha_notice.domain.user.entity;
 
-import com.ingong.inha_notice.domain.user.domain.enums.UserRole;
-import com.ingong.inha_notice.domain.user.domain.enums.UserStatus;
+import com.ingong.inha_notice.domain.user.enums.UserRole;
+import com.ingong.inha_notice.domain.user.enums.UserStatus;
 import com.ingong.inha_notice.global.entity.BaseTimeEntity;
 import com.ingong.inha_notice.global.util.UlidGenerator;
 import jakarta.persistence.Column;
