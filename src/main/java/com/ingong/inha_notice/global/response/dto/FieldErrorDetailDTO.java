@@ -8,8 +8,13 @@
  * Latest Updated Date: 2026-02-17
  */
 
-package com.ingong.inha_notice.global.response.status;
 
-public interface ErrorStatus extends ResponseStatus {
+package com.ingong.inha_notice.global.response.dto;
+
+public record FieldErrorDetailDTO(
+    String field,
+    String value,
+    String reason
+) {
 
 }

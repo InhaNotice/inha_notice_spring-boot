@@ -8,7 +8,7 @@
  * Latest Updated Date: 2026-02-17
  */
 
-package com.ingong.inha_notice.global.api.status;
+package com.ingong.inha_notice.global.response.status;
 
 public interface SuccessStatus extends ResponseStatus {
 
