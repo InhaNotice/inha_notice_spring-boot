@@ -8,18 +8,14 @@
  * Latest Updated Date: 2026-02-17
  */
 
-package com.ingong.inha_notice.api.v1.auth.dto.local.request;
+package com.ingong.inha_notice.api.v1.auth.dto.local.response;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import com.ingong.inha_notice.domain.user.enums.UserStatus;
 
-public record LoginRequestDTO(
-    @NotBlank
-    @Email
+public record JoinResponseDTO(
+    String publicId,
     String email,
-
-    @NotBlank
-    String password
+    UserStatus status
 ) {
 
 }

@@ -5,11 +5,12 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-16
+ * Latest Updated Date: 2026-02-17
  */
 
-package com.ingong.inha_notice.api.v1.auth.dto.local;
+package com.ingong.inha_notice.api.v1.auth.dto.local.request;
 
+import com.ingong.inha_notice.domain.auth.validation.password.StrongPassword;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +22,9 @@ public record JoinRequestDTO(
     String email,
 
     @NotBlank
+    @StrongPassword(
+        message = "비밀번호는 10~72자이며 영문 대/소문자, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다."
+    )
     String password,
 
     @NotNull
