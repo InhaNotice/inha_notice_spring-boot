@@ -36,6 +36,8 @@ google:
 jwt:
   private-key: ${JWT_PRIVATE_KEY}
   public-key: ${JWT_PUBLIC_KEY}
+  issuer: ${JWT_ISSUER}
+  audience: ${JWT_AUDIENCE}
   access-token:
     expiration: ${JWT_ACCESS_EXPIRATION}
   refresh-token:
