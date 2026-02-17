@@ -10,6 +10,6 @@
 
 package com.ingong.inha_notice.global.api.status.common;
 
-public interface ErrorStatus extends ResponseStatus {
-
+public enum ErrorStatus implements ResponseStatus {
+  
 }
