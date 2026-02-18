@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-18
  */
 
 package com.ingong.inha_notice.domain.auth.service;
@@ -14,7 +14,6 @@ import com.ingong.inha_notice.api.v1.auth.dto.local.request.JoinRequestDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.local.request.LoginRequestDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.local.response.JoinResponseDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.local.response.LoginResponseDTO;
-import com.ingong.inha_notice.api.v1.user.dto.response.UserInfoResponseDTO;
 import com.ingong.inha_notice.domain.auth.dto.TokenResponseDTO;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtTokenProvider;
 import com.ingong.inha_notice.domain.auth.status.AuthErrorStatus;
@@ -59,8 +58,10 @@ public class AuthService {
       throw new BusinessException(AuthErrorStatus.EMAIL_ALREADY_EXISTS);
     }
 
-    return new JoinResponseDTO(savedUser.getPublicId(), savedUser.getEmail(),
-        savedUser.getStatus());
+    TokenResponseDTO tokenResponseDTO = jwtTokenProvider.createTokens(savedUser.getPublicId());
+
+    return new JoinResponseDTO(tokenResponseDTO, savedUser.getEmail(),
+        savedUser.getIsPrivacyAgreed());
   }
 
   public LoginResponseDTO login(LoginRequestDTO dto) {
@@ -76,8 +77,7 @@ public class AuthService {
     }
 
     TokenResponseDTO tokenResponseDTO = jwtTokenProvider.createTokens(user.getPublicId());
-    UserInfoResponseDTO userInfoResponseDTO = UserInfoResponseDTO.from(user);
 
-    return new LoginResponseDTO(tokenResponseDTO, userInfoResponseDTO);
+    return new LoginResponseDTO(tokenResponseDTO, user.getEmail());
   }
 }
