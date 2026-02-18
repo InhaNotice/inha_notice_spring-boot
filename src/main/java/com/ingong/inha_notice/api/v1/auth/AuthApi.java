@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-18
  */
 
 package com.ingong.inha_notice.api.v1.auth;
@@ -17,6 +17,7 @@ import com.ingong.inha_notice.api.v1.auth.dto.local.response.LoginResponseDTO;
 import com.ingong.inha_notice.global.response.dto.ApiResponseDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +27,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface AuthApi {
 
   @PostMapping("/join")
-  ApiResponseDTO<JoinResponseDTO> join(@RequestBody @Valid JoinRequestDTO joinRequestDTO);
+  ResponseEntity<ApiResponseDTO<JoinResponseDTO>> join(
+      @RequestBody @Valid JoinRequestDTO joinRequestDTO);
 
   @PostMapping("/login")
-  ApiResponseDTO<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO loginRequestDTO);
+  ResponseEntity<ApiResponseDTO<LoginResponseDTO>> login(
+      @RequestBody @Valid LoginRequestDTO loginRequestDTO);
 }

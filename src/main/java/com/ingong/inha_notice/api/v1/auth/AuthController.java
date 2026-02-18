@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-18
  */
 
 package com.ingong.inha_notice.api.v1.auth;
@@ -19,6 +19,7 @@ import com.ingong.inha_notice.domain.auth.status.AuthSuccessStatus;
 import com.ingong.inha_notice.global.response.dto.ApiResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,17 +30,22 @@ public class AuthController implements AuthApi {
   private final AuthService authService;
 
   @Override
-  public ApiResponseDTO<JoinResponseDTO> join(
+  public ResponseEntity<ApiResponseDTO<JoinResponseDTO>> join(
       @RequestBody @Valid JoinRequestDTO joinRequestDTO) {
     JoinResponseDTO joinResponseDTO = authService.join(joinRequestDTO);
-    return ApiResponseDTO.success(AuthSuccessStatus.LOCAL_JOIN_SUCCESS, joinResponseDTO);
+    AuthSuccessStatus status = AuthSuccessStatus.LOCAL_JOIN_SUCCESS;
+    return ResponseEntity
+        .status(AuthSuccessStatus.LOCAL_JOIN_SUCCESS.getHttpStatus())
+        .body(ApiResponseDTO.success(status, joinResponseDTO));
   }
 
   @Override
-  public ApiResponseDTO<LoginResponseDTO> login(
+  public ResponseEntity<ApiResponseDTO<LoginResponseDTO>> login(
       @RequestBody @Valid LoginRequestDTO loginRequestDTO) {
     LoginResponseDTO loginResponseDTO = authService.login(loginRequestDTO);
-    return ApiResponseDTO.success(AuthSuccessStatus.LOCAL_LOGIN_SUCCESS, loginResponseDTO);
+    AuthSuccessStatus status = AuthSuccessStatus.LOCAL_LOGIN_SUCCESS;
+    return ResponseEntity
+        .status(status.getHttpStatus())
+        .body(ApiResponseDTO.success(status, loginResponseDTO));
   }
-
 }
