@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-18
  */
 
 package com.ingong.inha_notice.domain.user.status;
@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum UserSuccessStatus implements SuccessStatus {
-  MY_INFO_FETCH_SUCCESS(HttpStatus.OK, "USER_200_001", "내 정보 조회에 성공했어요.");
+  USER_INFO_SUCCESS(HttpStatus.OK, "USER_200_001", "내 정보 조회에 성공했어요.");
 
   private final HttpStatus httpStatus;
   private final String code;
