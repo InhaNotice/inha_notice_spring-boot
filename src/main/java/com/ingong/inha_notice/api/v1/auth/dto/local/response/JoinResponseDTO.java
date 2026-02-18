@@ -5,17 +5,17 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-18
  */
 
 package com.ingong.inha_notice.api.v1.auth.dto.local.response;
 
-import com.ingong.inha_notice.domain.user.enums.UserStatus;
+import com.ingong.inha_notice.domain.auth.dto.TokenResponseDTO;
 
 public record JoinResponseDTO(
-    String publicId,
+    TokenResponseDTO tokenResponseDTO,
     String email,
-    UserStatus status
+    Boolean isPrivacyAgreed
 ) {
 
 }
