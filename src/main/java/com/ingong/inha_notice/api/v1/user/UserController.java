@@ -5,12 +5,12 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-18
  */
 
 package com.ingong.inha_notice.api.v1.user;
 
-import com.ingong.inha_notice.api.v1.user.dto.response.UserInfoResponseDTO;
+import com.ingong.inha_notice.api.v1.user.dto.UserDTO;
 import com.ingong.inha_notice.domain.user.entity.User;
 import com.ingong.inha_notice.domain.user.service.UserService;
 import com.ingong.inha_notice.domain.user.status.UserSuccessStatus;
@@ -32,12 +32,12 @@ public class UserController {
 
   @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다.")
   @GetMapping("/me")
-  public ApiResponseDTO<UserInfoResponseDTO> getMyInfo(
+  public ApiResponseDTO<UserDTO> getMyInfo(
       @AuthenticationPrincipal AuthenticatedUser userDetails) {
 
     User user = userService.getByPublicId(userDetails.getPublicId());
-    UserInfoResponseDTO userInfo = UserInfoResponseDTO.from(user);
+    UserDTO userInfo = UserDTO.from(user);
 
-    return ApiResponseDTO.success(UserSuccessStatus.MY_INFO_FETCH_SUCCESS, userInfo);
+    return ApiResponseDTO.success(UserSuccessStatus.USER_INFO_SUCCESS, userInfo);
   }
 }
