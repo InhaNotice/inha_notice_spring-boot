@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-18
  */
 
 package com.ingong.inha_notice.global.security.handler;
@@ -37,8 +37,7 @@ public class ApiResponseAuthenticationEntryPoint implements AuthenticationEntryP
     log.warn("[Security] Authentication failed. method={} uri={}",
         request.getMethod(), request.getRequestURI());
     log.debug("[Security] AuthenticationException detail", ex);
-
-    // ✅ 401
+    
     errorResponseWriter.write(response, GlobalErrorStatus.UNAUTHORIZED_ACCESS);
   }
 }
