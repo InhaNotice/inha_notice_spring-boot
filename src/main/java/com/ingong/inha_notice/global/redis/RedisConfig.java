@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class RedisConfig {
   }
 
   @Bean(name = "stringRedisTemplate")
-  public RedisTemplate<String, String> stringRedisTemplate(RedisConnectionFactory factory) {
+  public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory factory) {
     return new StringRedisTemplate(factory);
   }
 }
