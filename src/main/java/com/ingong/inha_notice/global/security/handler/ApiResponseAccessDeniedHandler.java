@@ -14,7 +14,6 @@ import com.ingong.inha_notice.global.error.GlobalErrorStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,8 +30,8 @@ public class ApiResponseAccessDeniedHandler implements AccessDeniedHandler {
   @Override
   public void handle(
       HttpServletRequest request,
-      @NonNull HttpServletResponse response,
-      @NonNull AccessDeniedException ex
+      HttpServletResponse response,
+      AccessDeniedException ex
   ) throws IOException {
 
     log.warn("[Security] Access denied. method={} uri={}", request.getMethod(),
