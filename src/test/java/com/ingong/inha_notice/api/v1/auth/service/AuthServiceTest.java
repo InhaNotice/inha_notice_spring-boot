@@ -17,11 +17,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import com.ingong.inha_notice.api.v1.auth.dto.local.request.JoinRequestDTO;
-import com.ingong.inha_notice.api.v1.auth.dto.local.request.LoginRequestDTO;
-import com.ingong.inha_notice.api.v1.auth.dto.local.response.JoinResponseDTO;
-import com.ingong.inha_notice.api.v1.auth.dto.local.response.LoginResponseDTO;
-import com.ingong.inha_notice.domain.auth.dto.TokenResponseDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.request.local.JoinRequestDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.request.local.LoginRequestDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.response.jwt.TokenResponseDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.response.local.JoinResponseDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.response.local.LoginResponseDTO;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtTokenProvider;
 import com.ingong.inha_notice.domain.auth.service.AuthService;
 import com.ingong.inha_notice.domain.auth.status.AuthErrorStatus;
