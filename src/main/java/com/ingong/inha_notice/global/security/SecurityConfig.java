@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
 package com.ingong.inha_notice.global.security;
@@ -19,6 +19,7 @@ import com.ingong.inha_notice.global.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -37,11 +38,15 @@ public class SecurityConfig {
   private final ApiResponseAuthenticationEntryPoint customAuthenticationEntryPoint; // 주입
   private final ApiResponseAccessDeniedHandler customAccessDeniedHandler;
 
-  private static final String[] whiteList = {
-      "/api/v1/auth/**",
+  private static final String[] SWAGGER_URLS = {
       "/v3/api-docs/**",
       "/swagger-ui/**",
       "/swagger-ui.html",
+  };
+  private static final String[] AUTH_URLS = {
+      "/api/v1/auth/join",
+      "/api/v1/auth/login",
+      "/api/v1/auth/refresh",
   };
 
   @Bean
@@ -55,6 +60,7 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
+        .cors(Customizer.withDefaults())
         .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         .sessionManagement(
@@ -67,7 +73,8 @@ public class SecurityConfig {
 
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/actuator/health").permitAll()
-            .requestMatchers(whiteList).permitAll()
+            .requestMatchers(AUTH_URLS).permitAll()
+            .requestMatchers(SWAGGER_URLS).permitAll()
             .anyRequest().authenticated()
         )
 
