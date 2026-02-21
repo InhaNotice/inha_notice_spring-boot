@@ -23,6 +23,11 @@ spring:
     multipart:
       max-file-size: ${MAX_FILE_SIZE}
       max-request-size: ${MAX_REQUEST_SIZE}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
 google:
   client-id: ${GOOGLE_CLIENT_ID}
