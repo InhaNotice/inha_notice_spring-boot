@@ -5,25 +5,25 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
-package com.ingong.inha_notice.global.util;
+package com.ingong.inha_notice.domain.user.utils;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-public final class UlidGenerator {
+public final class UlidUtil {
 
   private static final char[] ENCODING_CHARS =
       "0123456789ABCDEFGHJKMNPQRSTVWXYZ".toCharArray(); // Crockford Base32
   private static final SecureRandom RANDOM = new SecureRandom();
   private static final BigInteger BASE = BigInteger.valueOf(32);
 
-  private UlidGenerator() {
+  private UlidUtil() {
   }
 
-  public static String newUlid() {
+  public static String getNewUlid() {
     byte[] bytes = new byte[16];
 
     long time = System.currentTimeMillis(); // 48-bit timestamp (ms)

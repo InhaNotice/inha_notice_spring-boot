@@ -5,15 +5,15 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
 package com.ingong.inha_notice.domain.user.entity;
 
 import com.ingong.inha_notice.domain.user.enums.UserRole;
 import com.ingong.inha_notice.domain.user.enums.UserStatus;
+import com.ingong.inha_notice.domain.user.utils.UlidUtil;
 import com.ingong.inha_notice.global.entity.BaseTimeEntity;
-import com.ingong.inha_notice.global.util.UlidGenerator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -68,7 +68,7 @@ public class User extends BaseTimeEntity {
   @PrePersist
   private void prePersist() {
     if (this.publicId == null || this.publicId.isBlank()) {
-      this.publicId = UlidGenerator.newUlid();
+      this.publicId = UlidUtil.getNewUlid();
     }
     if (this.role == null) {
       this.role = UserRole.USER;
@@ -81,7 +81,7 @@ public class User extends BaseTimeEntity {
   @Builder
   public User(String email, String password, Boolean isPrivacyAgreed, UserStatus status,
       UserRole role) {
-    this.publicId = UlidGenerator.newUlid();
+    this.publicId = UlidUtil.getNewUlid();
     this.email = email;
     this.password = password;
     this.isPrivacyAgreed = isPrivacyAgreed;

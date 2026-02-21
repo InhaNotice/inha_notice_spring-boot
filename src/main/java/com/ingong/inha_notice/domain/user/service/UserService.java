@@ -5,11 +5,12 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
 package com.ingong.inha_notice.domain.user.service;
 
+import com.ingong.inha_notice.api.v1.user.dto.response.UserInfoResponseDTO;
 import com.ingong.inha_notice.domain.user.entity.User;
 import com.ingong.inha_notice.domain.user.repository.UserRepository;
 import com.ingong.inha_notice.global.error.BusinessException;
@@ -25,8 +26,10 @@ public class UserService {
 
   private final UserRepository userRepository;
 
-  public User getByPublicId(String publicId) {
-    return userRepository.findByPublicId(publicId)
+  public UserInfoResponseDTO getUserInfo(String publicId) {
+    User user = userRepository.findByPublicId(publicId)
         .orElseThrow(() -> new BusinessException(GlobalErrorStatus.RESOURCE_NOT_FOUND));
+
+    return UserInfoResponseDTO.from(user);
   }
 }
