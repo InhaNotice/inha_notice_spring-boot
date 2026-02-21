@@ -5,22 +5,24 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-18
+ * Latest Updated Date: 2026-02-21
  */
 
 package com.ingong.inha_notice.domain.auth.service;
 
-import com.ingong.inha_notice.api.v1.auth.dto.local.request.JoinRequestDTO;
-import com.ingong.inha_notice.api.v1.auth.dto.local.request.LoginRequestDTO;
-import com.ingong.inha_notice.api.v1.auth.dto.local.response.JoinResponseDTO;
-import com.ingong.inha_notice.api.v1.auth.dto.local.response.LoginResponseDTO;
-import com.ingong.inha_notice.domain.auth.dto.TokenResponseDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.request.local.JoinRequestDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.request.local.LoginRequestDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.request.local.LogoutRequestDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.response.jwt.TokenResponseDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.response.local.JoinResponseDTO;
+import com.ingong.inha_notice.api.v1.auth.dto.response.local.LoginResponseDTO;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtTokenProvider;
 import com.ingong.inha_notice.domain.auth.status.AuthErrorStatus;
 import com.ingong.inha_notice.domain.user.entity.User;
 import com.ingong.inha_notice.domain.user.enums.UserStatus;
 import com.ingong.inha_notice.domain.user.repository.UserRepository;
 import com.ingong.inha_notice.global.error.BusinessException;
+import com.ingong.inha_notice.global.security.auth.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -79,5 +81,16 @@ public class AuthService {
     TokenResponseDTO tokenResponseDTO = jwtTokenProvider.createTokens(user.getPublicId());
 
     return new LoginResponseDTO(tokenResponseDTO, user.getEmail());
+  }
+
+  public void logout(AuthenticatedUser authenticatedUser, LogoutRequestDTO logoutRequestDTO) {
+    if (authenticatedUser == null) {
+      throw new BusinessException(AuthErrorStatus.ACCESS_DENIED);
+    }
+
+    if (logoutRequestDTO.isAllDevices()) {
+
+    }
+
   }
 }
