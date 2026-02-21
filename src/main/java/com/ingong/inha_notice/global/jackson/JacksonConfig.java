@@ -8,7 +8,7 @@
  * Latest Updated Date: 2026-02-17
  */
 
-package com.ingong.inha_notice.global.config;
+package com.ingong.inha_notice.global.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
