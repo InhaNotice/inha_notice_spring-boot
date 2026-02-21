@@ -5,11 +5,16 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
-package com.ingong.inha_notice.global.response.status;
 
-public interface ErrorStatus extends ResponseStatus {
+package com.ingong.inha_notice.global.api.dto;
+
+public record FieldErrorDetailDTO(
+    String field,
+    String value,
+    String reason
+) {
 
 }

@@ -5,13 +5,13 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
-package com.ingong.inha_notice.global.response.dto;
+package com.ingong.inha_notice.global.api.dto;
 
-import com.ingong.inha_notice.global.response.status.ErrorStatus;
-import com.ingong.inha_notice.global.response.status.SuccessStatus;
+import com.ingong.inha_notice.global.api.status.ErrorStatus;
+import com.ingong.inha_notice.global.api.status.SuccessStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record ApiResponseDTO<D>(
