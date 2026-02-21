@@ -8,7 +8,7 @@
  * Latest Updated Date: 2026-02-21
  */
 
-package com.ingong.inha_notice.api.v1.auth;
+package com.ingong.inha_notice.api.v1.auth.controller;
 
 import com.ingong.inha_notice.api.v1.auth.dto.request.jwt.RefreshTokenRequestDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.request.local.JoinRequestDTO;
