@@ -46,3 +46,9 @@ security:
   password:
     bcrypt-strength: ${BCRYPT_STRENGTH}
     pepper: ${PASSWORD_PEPPER}
+
+management:
+  endpoints:
+    web:
+      cors:
+        allowed-origins: ${ALLOWED_ORIGINS}
