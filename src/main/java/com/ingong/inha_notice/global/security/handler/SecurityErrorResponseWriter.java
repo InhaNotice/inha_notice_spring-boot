@@ -5,14 +5,14 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
 package com.ingong.inha_notice.global.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ingong.inha_notice.global.response.dto.ApiResponseDTO;
-import com.ingong.inha_notice.global.response.status.ErrorStatus;
+import com.ingong.inha_notice.global.api.dto.ApiResponseDTO;
+import com.ingong.inha_notice.global.api.status.ErrorStatus;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
