@@ -5,14 +5,14 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-02-21
  */
 
 package com.ingong.inha_notice.global.error;
 
-import com.ingong.inha_notice.global.response.dto.ApiResponseDTO;
-import com.ingong.inha_notice.global.response.dto.FieldErrorDetailDTO;
-import com.ingong.inha_notice.global.response.status.ErrorStatus;
+import com.ingong.inha_notice.global.api.dto.ApiResponseDTO;
+import com.ingong.inha_notice.global.api.dto.FieldErrorDetailDTO;
+import com.ingong.inha_notice.global.api.status.ErrorStatus;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
