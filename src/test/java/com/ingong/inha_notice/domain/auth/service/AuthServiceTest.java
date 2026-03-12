@@ -5,10 +5,10 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-21
+ * Latest Updated Date: 2026-03-12
  */
 
-package com.ingong.inha_notice.api.v1.auth.service;
+package com.ingong.inha_notice.domain.auth.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -23,7 +23,6 @@ import com.ingong.inha_notice.api.v1.auth.dto.response.jwt.TokenResponseDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.response.local.JoinResponseDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.response.local.LoginResponseDTO;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtTokenProvider;
-import com.ingong.inha_notice.domain.auth.service.AuthService;
 import com.ingong.inha_notice.domain.auth.status.AuthErrorStatus;
 import com.ingong.inha_notice.domain.user.entity.User;
 import com.ingong.inha_notice.domain.user.enums.UserRole;
