@@ -5,16 +5,24 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-21
+ * Latest Updated Date: 2026-03-14
  */
 
 package com.ingong.inha_notice.domain.auth.infra.jwt;
 
 import com.ingong.inha_notice.api.v1.auth.dto.response.jwt.TokenResponseDTO;
+import com.ingong.inha_notice.domain.auth.infra.jwt.exception.JwtAuthenticationException;
+import com.ingong.inha_notice.domain.auth.infra.jwt.status.JwtErrorStatus;
+import com.ingong.inha_notice.global.error.BusinessException;
 import com.ingong.inha_notice.global.security.auth.PublicIdUserDetailsService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.MissingClaimException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.annotation.PostConstruct;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -36,6 +44,9 @@ import org.springframework.util.StringUtils;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
+
+  private static final String TOKEN_TYPE_ACCESS = "access";
+  private static final String TOKEN_TYPE_REFRESH = "refresh";
 
   private final JwtProperties jwtProperties;
   private final PublicIdUserDetailsService publicIdUserDetailsService;
@@ -77,79 +88,103 @@ public class JwtTokenProvider {
     }
   }
 
-  public TokenResponseDTO createTokens(String userPublicId) {
+  public TokenResponseDTO issueTokenPair(String userPublicId) {
     long now = System.currentTimeMillis();
 
-    // Access Token 생성
     long accessTokenExp = jwtProperties.getAccessToken().getExpiration();
-    String accessToken = Jwts.builder()
-        // Payload
-        .id(UUID.randomUUID().toString()) // jti (JWT ID)
-        .subject(userPublicId) // sub (User Public ID)
-        .issuer(jwtProperties.getIssuer()) // iss
-        .audience().add(jwtProperties.getAudience()).and() // aud
-        .claim("token_type", "access") // token_type
-        .issuedAt(new Date(now)) // iat (Issued At)
-        .expiration(new Date(now + accessTokenExp))// exp (Expiration)
-        // Header + Signature generation rule
-        .signWith(privateKey, Jwts.SIG.RS256) // alg=RS256, and create signature at compact()
-        .compact();
-
-    // Refresh Token 생성
     long refreshTokenExp = jwtProperties.getRefreshToken().getExpiration();
-    String refreshToken = Jwts.builder()
-        // Payload
-        .id(UUID.randomUUID().toString())
-        .subject(userPublicId)
-        .issuer(jwtProperties.getIssuer()) // iss
-        .audience().add(jwtProperties.getAudience()).and() // aud
-        .claim("token_type", "refresh")
-        .issuedAt(new Date(now))
-        .expiration(new Date(now + refreshTokenExp))
-        // Header + Signature generation rule
-        .signWith(privateKey, Jwts.SIG.RS256)
-        .compact();
+
+    String accessToken = buildToken(userPublicId, now, accessTokenExp, TOKEN_TYPE_ACCESS);
+    String refreshToken = buildToken(userPublicId, now, refreshTokenExp, TOKEN_TYPE_REFRESH);
 
     return TokenResponseDTO.of(accessToken, refreshToken, accessTokenExp);
   }
 
   public UsernamePasswordAuthenticationToken getAuthentication(String rawAuthorizationHeader) {
-    Claims claims = parseAccessClaims(rawAuthorizationHeader);
+    Claims claims = parseClaims(stripBearer(rawAuthorizationHeader), TOKEN_TYPE_ACCESS);
+
+    String subject = claims.getSubject();
+    if (!StringUtils.hasText(subject)) {
+      throw new JwtAuthenticationException("토큰에 subject가 없습니다.");
+    }
 
     UserDetails userDetails = publicIdUserDetailsService.loadUserByUsername(claims.getSubject());
     return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
   }
 
-  private Claims parseAccessClaims(String rawToken) {
-    String token = stripBearer(rawToken);
-    Jws<Claims> jws = Jwts.parser()
-        .verifyWith(publicKey)
-        .requireIssuer(jwtProperties.getIssuer())
-        .requireAudience(jwtProperties.getAudience())
-        .require("token_type", "access")
-        .build()
-        .parseSignedClaims(token);
+  public String extractPublicIdFromRefresh(String refreshToken) {
+    if (!StringUtils.hasText(refreshToken)) {
+      throw new BusinessException(JwtErrorStatus.JWT_REFRESH_TOKEN_NOT_FOUND);
+    }
 
-    return jws.getPayload();
+    Claims claims = parseClaims(refreshToken, TOKEN_TYPE_REFRESH);
+    return claims.getSubject();
+  }
+
+  public TokenResponseDTO reissueAccessToken(String existingRefreshToken) {
+    if (!StringUtils.hasText(existingRefreshToken)) {
+      throw new BusinessException(JwtErrorStatus.JWT_REFRESH_TOKEN_NOT_FOUND);
+    }
+
+    Claims claims = parseClaims(existingRefreshToken, TOKEN_TYPE_REFRESH);
+    String userPublicId = claims.getSubject();
+
+    long now = System.currentTimeMillis();
+    long accessTokenExp = jwtProperties.getAccessToken().getExpiration();
+    String accessToken = buildToken(userPublicId, now, accessTokenExp, TOKEN_TYPE_ACCESS);
+    return TokenResponseDTO.of(accessToken, existingRefreshToken, accessTokenExp);
+  }
+
+  private String buildToken(String userPublicId, long now, long expiration, String tokenType) {
+    if (!StringUtils.hasText(userPublicId)) {
+      throw new IllegalArgumentException("userPublicId가 없습니다.");
+    }
+
+    return Jwts.builder()
+        .id(UUID.randomUUID().toString())
+        .subject(userPublicId)
+        .issuer(jwtProperties.getIssuer())
+        .audience().add(jwtProperties.getAudience()).and()
+        .claim("token_type", tokenType)
+        .issuedAt(new Date(now))
+        .expiration(new Date(now + expiration))
+        .signWith(privateKey, Jwts.SIG.RS256)
+        .compact();
+  }
+
+  private Claims parseClaims(String token, String tokenType) {
+    if (!StringUtils.hasText(token)) {
+      throw new JwtAuthenticationException("토큰이 없습니다.");
+    }
+
+    try {
+      Jws<Claims> jws = Jwts.parser()
+          .verifyWith(publicKey)
+          .requireIssuer(jwtProperties.getIssuer())
+          .requireAudience(jwtProperties.getAudience())
+          .require("token_type", tokenType)
+          .build()
+          .parseSignedClaims(token);
+      return jws.getPayload();
+    } catch (ExpiredJwtException e) {
+      throw new JwtAuthenticationException("만료된 토큰입니다.", e);
+    } catch (MalformedJwtException | UnsupportedJwtException e) {
+      throw new JwtAuthenticationException("잘못된 형식의 토큰입니다.", e);
+    } catch (MissingClaimException | IncorrectClaimException e) {
+      throw new JwtAuthenticationException("토큰 클레임이 유효하지 않습니다.", e);
+    }
   }
 
   private String stripBearer(String rawToken) {
-    if (rawToken == null) {
-      throw new IllegalArgumentException("Authorization 토큰이 없습니다.");
+    if (!StringUtils.hasText(rawToken)) {
+      throw new JwtAuthenticationException("Authorization 토큰이 없습니다.");
     }
-
-    String t = rawToken.trim();
-    if (t.isEmpty()) {
-      throw new IllegalArgumentException("Authorization 토큰이 없습니다.");
+    if (!rawToken.trim().regionMatches(true, 0, "Bearer ", 0, 7)) {
+      throw new JwtAuthenticationException("Authorization 헤더는 Bearer 토큰 형식이어야 합니다.");
     }
-
-    if (!t.regionMatches(true, 0, "Bearer ", 0, 7)) {
-      throw new IllegalArgumentException("Authorization 헤더는 Bearer 토큰 형식이어야 합니다.");
-    }
-
-    String token = t.substring(7).trim();
+    String token = rawToken.trim().substring(7).trim();
     if (token.isEmpty()) {
-      throw new IllegalArgumentException("Bearer 토큰이 없습니다.");
+      throw new JwtAuthenticationException("Bearer 토큰이 없습니다.");
     }
     return token;
   }
