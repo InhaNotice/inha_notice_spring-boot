@@ -1,40 +1,123 @@
-HELP.md
+# This is file of the project INGONG
+# Licensed under the MIT License.
+# Copyright (c) 2025-2026 INGONG
+# For full license text, see the LICENSE file in the root directory or at
+# https://opensource.org/license/mit
+# Author: Junho Kim
+# Latest Updated Date: 2026-02-16
+
+# ============================================
+# OS Files
+# ============================================
+.DS_Store
+Thumbs.db
+
+# ============================================
+# Gradle
+# ============================================
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
+# ============================================
+# IDE - IntelliJ IDEA
+# ============================================
+.idea/
 *.iws
 *.iml
 *.ipr
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.vscode/
+.run/
 
-### NetBeans ###
+# ============================================
+# IDE - Eclipse
+# ============================================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# ============================================
+# IDE - NetBeans
+# ============================================
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
-.vscode/
+# ============================================
+# IDE - VSCode
+# ============================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-### macOS ###
-.DS_Store
+# ============================================
+# Security & Sensitive Files
+# ============================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+firebase-service-account.json
+src/config/firebase-service-account.json
+
+# ============================================
+# Logs & Runtime Data
+# ============================================
+logs/
+*.log
+*.log.*
+*.pid
+*.pid.lock
+*.seed
+
+# ============================================
+# Test & Coverage
+# ============================================
+coverage/
+.nyc_output/
+
+# ============================================
+# Temporary Files
+# ============================================
+tmp/
+temp/
+.temp/
+.tmp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# ============================================
+# Documentation & Help
+# ============================================
+HELP.md
+
+# ============================================
+# Docker
+# ============================================
+volumes/
+
+# ============================================
+# Database
+# ============================================
+database/
+*.db

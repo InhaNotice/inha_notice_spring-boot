@@ -1,0 +1,129 @@
+# This is file of the project INGONG
+# Licensed under the MIT License.
+# Copyright (c) 2026 INGONG
+# For full license text, see the LICENSE file in the root directory or at
+# https://opensource.org/license/mit
+# Author: Junho Kim
+# Latest Updated Date: 2026-02-08
+
+# ============================================
+# Git & Version Control
+# ============================================
+.git
+.gitignore
+.gitattributes
+.github
+
+# ============================================
+# Build & Dependencies (Gradle)
+# ============================================
+.gradle
+build/
+!build/libs/*.jar
+gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# ============================================
+# IDE Settings
+# ============================================
+# IntelliJ IDEA
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# VSCode
+.vscode
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# ============================================
+# OS Files
+# ============================================
+.DS_Store
+Thumbs.db
+
+# ============================================
+# Logs & Runtime Data
+# ============================================
+logs/
+*.log
+*.log.*
+log/
+
+# ============================================
+# Configuration & Secrets
+# ============================================
+# Application configs (로컬 개발용)
+application-local.yml
+application-dev.yml
+application-*.properties
+!application.yml
+!application.properties
+
+# Environment files
+.env
+.env.*
+env/
+
+# Security files
+*.pem
+*.key
+secrets/
+firebase-service-account.json
+src/config/firebase-service-account.json
+
+# ============================================
+# Docker Files
+# ============================================
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+docker-compose*.yaml
+
+# ============================================
+# Documentation
+# ============================================
+README.md
+docs/
+*.md
+!build.gradle
+!settings.gradle
+
+# ============================================
+# Test & Coverage
+# ============================================
+coverage/
+.nyc_output
+!**/src/test/**
+
+# ============================================
+# Temporary Files
+# ============================================
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# ============================================
+# Other
+# ============================================
+HELP.md
+volumes/

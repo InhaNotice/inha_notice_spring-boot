@@ -1,0 +1,54 @@
+server:
+  port: ${PORT}
+
+spring:
+  jackson:
+    time-zone: Asia/Seoul
+
+  datasource:
+    url: ${MAIN_DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DRIVER_CLASS_NAME}
+    hikari:
+      maximum-pool-size: ${MAXIMUM_POOL_SIZE}
+      minimum-idle: ${MINIMUM_IDEL}
+      connection-timeout: ${CONNECTION_TIMEOUT}
+      max-lifetime: ${MAX_LIFETIME}
+      idle-timeout: ${IDEL_CONNECTION_TIMEOUT}
+  jpa:
+    database-platform: ${DATABASE_PLATFORM}
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE}
+      max-request-size: ${MAX_REQUEST_SIZE}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+
+jwt:
+  private-key: ${JWT_PRIVATE_KEY}
+  public-key: ${JWT_PUBLIC_KEY}
+  issuer: ${JWT_ISSUER}
+  audience: ${JWT_AUDIENCE}
+  access-token:
+    expiration: ${JWT_ACCESS_EXPIRATION}
+  refresh-token:
+    expiration: ${JWT_REFRESH_EXPIRATION}
+
+security:
+  password:
+    bcrypt-strength: ${BCRYPT_STRENGTH}
+    pepper: ${PASSWORD_PEPPER}
+
+management:
+  endpoints:
+    web:
+      cors:
+        allowed-origins: ${ALLOWED_ORIGINS}
