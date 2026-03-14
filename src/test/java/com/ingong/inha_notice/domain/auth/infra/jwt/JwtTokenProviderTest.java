@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-03-12
+ * Latest Updated Date: 2026-03-14
  */
 
 package com.ingong.inha_notice.domain.auth.infra.jwt;
@@ -16,8 +16,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import com.ingong.inha_notice.api.v1.auth.dto.response.jwt.TokenResponseDTO;
+import com.ingong.inha_notice.domain.auth.infra.jwt.exception.JwtAuthenticationException;
+import com.ingong.inha_notice.global.error.BusinessException;
 import com.ingong.inha_notice.global.security.auth.PublicIdUserDetailsService;
-import io.jsonwebtoken.JwtException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.util.Base64;
@@ -78,14 +79,14 @@ public class JwtTokenProviderTest {
   }
 
   @Nested
-  @DisplayName("createTokens 메서드는")
-  class CreateTokensTest {
+  @DisplayName("issueTokenPair 메서드는")
+  class IssueTokenPairTest {
 
     private final String validPublicId = "test-public-id-123";
 
     @Test
     void 유효한_토큰을_생성한다() {
-      TokenResponseDTO result = jwtTokenProvider.createTokens(validPublicId);
+      TokenResponseDTO result = jwtTokenProvider.issueTokenPair(validPublicId);
 
       assertThat(result).isNotNull();
       assertThat(result.accessToken()).isNotNull();
@@ -95,7 +96,7 @@ public class JwtTokenProviderTest {
 
     @Test
     void 생성된_토큰에_publicId가_포함된다() {
-      TokenResponseDTO result = jwtTokenProvider.createTokens(validPublicId);
+      TokenResponseDTO result = jwtTokenProvider.issueTokenPair(validPublicId);
 
       // 토큰이 유효한 JWT 형식인지 확인 (header.payload.signature)
       assertThat(result.accessToken().split("\\.")).hasSize(3);
@@ -111,7 +112,7 @@ public class JwtTokenProviderTest {
 
     @Test
     void 유효한_Bearer_토큰으로_인증객체를_생성한다() {
-      TokenResponseDTO tokens = jwtTokenProvider.createTokens(validPublicId);
+      TokenResponseDTO tokens = jwtTokenProvider.issueTokenPair(validPublicId);
       String bearerToken = "Bearer " + tokens.accessToken();
 
       UserDetails userDetails = User.builder()
@@ -134,11 +135,11 @@ public class JwtTokenProviderTest {
 
     @Test
     void Bearer_없는_토큰이면_예외를_던진다() {
-      TokenResponseDTO tokens = jwtTokenProvider.createTokens(validPublicId);
+      TokenResponseDTO tokens = jwtTokenProvider.issueTokenPair(validPublicId);
       String invalidToken = tokens.accessToken(); // Bearer 없음
 
       assertThatThrownBy(() -> jwtTokenProvider.getAuthentication(invalidToken))
-          .isInstanceOf(IllegalArgumentException.class)
+          .isInstanceOf(JwtAuthenticationException.class)
           .hasMessageContaining("Bearer");
 
       then(publicIdUserDetailsService).shouldHaveNoInteractions();
@@ -147,7 +148,7 @@ public class JwtTokenProviderTest {
     @Test
     void null_토큰이면_예외를_던진다() {
       assertThatThrownBy(() -> jwtTokenProvider.getAuthentication(null))
-          .isInstanceOf(IllegalArgumentException.class)
+          .isInstanceOf(JwtAuthenticationException.class)
           .hasMessageContaining("토큰이 없습니다");
 
       then(publicIdUserDetailsService).shouldHaveNoInteractions();
@@ -156,7 +157,7 @@ public class JwtTokenProviderTest {
     @Test
     void 빈_토큰이면_예외를_던진다() {
       assertThatThrownBy(() -> jwtTokenProvider.getAuthentication(""))
-          .isInstanceOf(IllegalArgumentException.class)
+          .isInstanceOf(JwtAuthenticationException.class)
           .hasMessageContaining("토큰이 없습니다");
 
       then(publicIdUserDetailsService).shouldHaveNoInteractions();
@@ -165,7 +166,7 @@ public class JwtTokenProviderTest {
     @Test
     void Bearer_뒤에_토큰이_없으면_예외를_던진다() {
       assertThatThrownBy(() -> jwtTokenProvider.getAuthentication("Bearer  "))
-          .isInstanceOf(IllegalArgumentException.class)
+          .isInstanceOf(JwtAuthenticationException.class)
           .hasMessageContaining("Bearer");
 
       then(publicIdUserDetailsService).shouldHaveNoInteractions();
@@ -176,9 +177,97 @@ public class JwtTokenProviderTest {
       String invalidToken = "Bearer invalid.token.format";
 
       assertThatThrownBy(() -> jwtTokenProvider.getAuthentication(invalidToken))
-          .isInstanceOf(JwtException.class);
+          .isInstanceOf(JwtAuthenticationException.class);
 
       then(publicIdUserDetailsService).shouldHaveNoInteractions();
+    }
+  }
+
+  @Nested
+  @DisplayName("extractPublicIdFromRefresh 메서드는")
+  class ExtractPublicIdFromRefreshTest {
+
+    private final String validPublicId = "test-public-id-123";
+
+    @Test
+    void 리프레시_토큰에서_publicId를_추출한다() {
+      TokenResponseDTO tokens = jwtTokenProvider.issueTokenPair(validPublicId);
+
+      String extractedPublicId = jwtTokenProvider.extractPublicIdFromRefresh(
+          tokens.refreshToken());
+
+      assertThat(extractedPublicId).isEqualTo(validPublicId);
+    }
+
+    @Test
+    void 잘못된_토큰이면_예외를_던진다() {
+      String invalidToken = "invalid.refresh.token";
+
+      assertThatThrownBy(() -> jwtTokenProvider.extractPublicIdFromRefresh(invalidToken))
+          .isInstanceOf(JwtAuthenticationException.class);
+    }
+
+    @Test
+    void null_토큰이면_예외를_던진다() {
+      assertThatThrownBy(() -> jwtTokenProvider.extractPublicIdFromRefresh(null))
+          .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void 빈_토큰이면_예외를_던진다() {
+      assertThatThrownBy(() -> jwtTokenProvider.extractPublicIdFromRefresh(""))
+          .isInstanceOf(BusinessException.class);
+    }
+  }
+
+  @Nested
+  @DisplayName("reissueAccessToken 메서드는")
+  class ReissueAccessTokenTest {
+
+    private final String validPublicId = "test-public-id-123";
+
+    @Test
+    void 새로운_액세스_토큰을_생성하고_리프레시_토큰은_재사용한다() {
+      TokenResponseDTO tokens = jwtTokenProvider.issueTokenPair(validPublicId);
+      String existingRefreshToken = tokens.refreshToken();
+
+      TokenResponseDTO result = jwtTokenProvider.reissueAccessToken(existingRefreshToken);
+
+      assertThat(result).isNotNull();
+      assertThat(result.accessToken()).isNotNull();
+      assertThat(result.refreshToken()).isEqualTo(existingRefreshToken); // 기존 토큰 재사용
+      assertThat(result.expiresIn()).isEqualTo(3600000L);
+    }
+
+    @Test
+    void 생성된_액세스_토큰에_publicId가_포함된다() {
+      TokenResponseDTO tokens = jwtTokenProvider.issueTokenPair(validPublicId);
+      String existingRefreshToken = tokens.refreshToken();
+
+      TokenResponseDTO result = jwtTokenProvider.reissueAccessToken(existingRefreshToken);
+
+      // 토큰이 유효한 JWT 형식인지 확인
+      assertThat(result.accessToken().split("\\.")).hasSize(3);
+    }
+
+    @Test
+    void null_토큰이면_예외를_던진다() {
+      assertThatThrownBy(() -> jwtTokenProvider.reissueAccessToken(null))
+          .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void 빈_토큰이면_예외를_던진다() {
+      assertThatThrownBy(() -> jwtTokenProvider.reissueAccessToken(""))
+          .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void 잘못된_형식의_토큰이면_예외를_던진다() {
+      String invalidToken = "invalid.refresh.token";
+
+      assertThatThrownBy(() -> jwtTokenProvider.reissueAccessToken(invalidToken))
+          .isInstanceOf(JwtAuthenticationException.class);
     }
   }
 }

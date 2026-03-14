@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-21
+ * Latest Updated Date: 2026-03-14
  */
 
 package com.ingong.inha_notice.domain.auth.status;
@@ -30,6 +30,9 @@ public enum AuthErrorStatus implements ErrorStatus {
   INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_013", "유효하지 않은 토큰입니다."),
   INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "AUTH_401_014", "토큰의 서명이 올바르지 않습니다."),
   UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_015", "지원하지 않는 형식의 토큰입니다."),
+  INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_401_016", "유효하지 않은 리프레시 토큰입니다."),
+  REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "AUTH_401_017",
+      "이미 로그아웃되었거나 존재하지 않는 리프레시 토큰입니다."),
 
   // Authorization(403)
   ACCESS_DENIED(HttpStatus.FORBIDDEN, "AUTH_403_020", "해당 자원에 접근할 권한이 없습니다.");
