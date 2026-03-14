@@ -46,7 +46,7 @@ public class SecurityConfig {
   private static final String[] AUTH_URLS = {
       "/api/v1/auth/local/join",
       "/api/v1/auth/local/login",
-      "/api/v1/auth/local/refresh",
+      "/api/v1/auth/refresh",
   };
 
   @Bean
