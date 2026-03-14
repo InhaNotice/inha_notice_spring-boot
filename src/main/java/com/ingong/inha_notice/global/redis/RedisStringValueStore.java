@@ -24,7 +24,6 @@ public class RedisStringValueStore implements StringKeyValueStore {
 
   @Qualifier("stringRedisTemplate")
   private final StringRedisTemplate redisTemplate;
-  private final StringKeyValueStore stringKeyValueStore;
 
   @Override
   public void set(String key, String value, Duration ttl) {

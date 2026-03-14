@@ -46,7 +46,7 @@ public class RedisStringValueStoreTest {
 
   @BeforeEach
   void setUp() {
-    redisStringValueStore = new RedisStringValueStore(redisTemplate, stringKeyValueStore);
+    redisStringValueStore = new RedisStringValueStore(redisTemplate);
   }
 
   @Nested
