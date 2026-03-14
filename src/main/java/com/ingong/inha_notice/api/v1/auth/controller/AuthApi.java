@@ -33,11 +33,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/api/v1/auth")
 public interface AuthApi {
 
-  @PostMapping("/join")
+  @PostMapping("/local/join")
   ResponseEntity<ApiResponseDTO<JoinResponseDTO>> join(
       @RequestBody @Valid JoinRequestDTO joinRequestDTO);
 
-  @PostMapping("/login")
+  @PostMapping("/local/login")
   ResponseEntity<ApiResponseDTO<LoginResponseDTO>> login(
       @RequestBody @Valid LoginRequestDTO loginRequestDTO);
 
@@ -47,7 +47,7 @@ public interface AuthApi {
       HttpServletRequest request, HttpServletResponse response
   );
 
-  @PostMapping("/logout")
+  @PostMapping("/local/logout")
   ApiResponseDTO<Void> logout(
       @RequestBody LogoutRequestDTO logoutRequestDTO,
       @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
