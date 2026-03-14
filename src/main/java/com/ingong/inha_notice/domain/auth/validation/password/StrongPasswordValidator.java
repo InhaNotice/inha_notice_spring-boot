@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-17
+ * Latest Updated Date: 2026-03-14
  */
 
 package com.ingong.inha_notice.domain.auth.validation.password;
@@ -38,7 +38,11 @@ public class StrongPasswordValidator implements ConstraintValidator<StrongPasswo
       return true;
     }
 
-    if (value.length() < min || value.length() > max) {
+    if (value.length() < min) {
+      return false;
+    }
+
+    if (value.length() > max) {
       return false;
     }
 

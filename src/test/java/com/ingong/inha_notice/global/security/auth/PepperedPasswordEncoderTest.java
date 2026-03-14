@@ -16,6 +16,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HexFormat;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -75,7 +79,7 @@ public class PepperedPasswordEncoderTest {
     void 비밀번호를_암호화한다() {
       encoder = new PepperedPasswordEncoder(delegate, validPepper);
       String rawPassword = "password123";
-      String pepperedPassword = rawPassword + validPepper;
+      String pepperedPassword = hmacSha256(validPepper, rawPassword);
       String encodedPassword = "encoded-password-hash";
 
       given(delegate.encode(pepperedPassword)).willReturn(encodedPassword);
@@ -88,10 +92,10 @@ public class PepperedPasswordEncoderTest {
     }
 
     @Test
-    void pepper가_추가되어_암호화된다() {
+    void pepper를_키로_HMAC_사전해시한_후_암호화된다() {
       encoder = new PepperedPasswordEncoder(delegate, validPepper);
       String rawPassword = "test123";
-      String pepperedPassword = rawPassword + validPepper;
+      String pepperedPassword = hmacSha256(validPepper, rawPassword);
 
       given(delegate.encode(anyString())).willReturn("encoded");
 
@@ -111,7 +115,7 @@ public class PepperedPasswordEncoderTest {
     void 같은_비밀번호면_매칭에_성공한다() {
       encoder = new PepperedPasswordEncoder(delegate, validPepper);
       String rawPassword = "password123";
-      String pepperedPassword = rawPassword + validPepper;
+      String pepperedPassword = hmacSha256(validPepper, rawPassword);
       String encodedPassword = "encoded-hash";
 
       given(delegate.matches(pepperedPassword, encodedPassword)).willReturn(true);
@@ -127,7 +131,7 @@ public class PepperedPasswordEncoderTest {
     void 다른_비밀번호면_매칭에_실패한다() {
       encoder = new PepperedPasswordEncoder(delegate, validPepper);
       String rawPassword = "password123";
-      String pepperedPassword = rawPassword + validPepper;
+      String pepperedPassword = hmacSha256(validPepper, rawPassword);
       String wrongEncodedPassword = "wrong-encoded-hash";
 
       given(delegate.matches(pepperedPassword, wrongEncodedPassword)).willReturn(false);
@@ -140,10 +144,10 @@ public class PepperedPasswordEncoderTest {
     }
 
     @Test
-    void pepper가_추가되어_매칭된다() {
+    void pepper를_키로_HMAC_사전해시한_후_매칭된다() {
       encoder = new PepperedPasswordEncoder(delegate, validPepper);
       String rawPassword = "test123";
-      String pepperedPassword = rawPassword + validPepper;
+      String pepperedPassword = hmacSha256(validPepper, rawPassword);
       String encodedPassword = "encoded";
 
       given(delegate.matches(anyString(), anyString())).willReturn(true);
@@ -186,6 +190,18 @@ public class PepperedPasswordEncoderTest {
       assertThat(result).isTrue();
 
       then(delegate).should().upgradeEncoding(encodedPassword);
+    }
+  }
+
+  private String hmacSha256(String pepper, String rawPassword) {
+    try {
+      Mac mac = Mac.getInstance("HmacSHA256");
+      SecretKeySpec key = new SecretKeySpec(pepper.getBytes(StandardCharsets.UTF_8),
+          "HmacSHA256");
+      mac.init(key);
+      return HexFormat.of().formatHex(mac.doFinal(rawPassword.getBytes(StandardCharsets.UTF_8)));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 }

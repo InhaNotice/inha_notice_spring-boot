@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-03-12
+ * Latest Updated Date: 2026-03-14
  */
 
 package com.ingong.inha_notice.domain.auth.validation.password;
@@ -84,7 +84,7 @@ public class StrongPasswordValidatorTest {
 
     @Test
     void 최대길이_초과이면_false를_반환한다() {
-      String longPassword = "A".repeat(73) + "a1!"; // 73자 초과 (최대 72자)
+      String longPassword = "A".repeat(73) + "a1!";
 
       boolean result = validator.isValid(longPassword, context);
 
@@ -147,7 +147,7 @@ public class StrongPasswordValidatorTest {
 
     @Test
     void 최대길이에_맞고_모든_조건_만족하면_true를_반환한다() {
-      String validPassword = "A".repeat(68) + "a1!"; // 정확히 72자
+      String validPassword = "A".repeat(68) + "a1!";
 
       boolean result = validator.isValid(validPassword, context);
 
