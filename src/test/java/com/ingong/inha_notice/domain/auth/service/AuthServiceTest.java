@@ -26,9 +26,11 @@ import com.ingong.inha_notice.api.v1.auth.dto.request.local.LogoutRequestDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.response.jwt.TokenResponseDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.response.local.JoinResponseDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.response.local.LoginResponseDTO;
+import com.ingong.inha_notice.domain.auth.entity.RefreshToken;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtProperties;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtTokenProvider;
 import com.ingong.inha_notice.domain.auth.infra.redis.RedisRefreshTokenStore;
+import com.ingong.inha_notice.domain.auth.repository.RefreshTokenRepository;
 import com.ingong.inha_notice.domain.auth.status.AuthErrorStatus;
 import com.ingong.inha_notice.domain.user.entity.User;
 import com.ingong.inha_notice.domain.user.enums.UserRole;
@@ -65,6 +67,9 @@ public class AuthServiceTest {
 
   @Mock
   private RedisRefreshTokenStore redisRefreshTokenStore;
+
+  @Mock
+  private RefreshTokenRepository refreshTokenRepository;
 
   @Mock
   private JwtProperties jwtProperties;
@@ -155,6 +160,7 @@ public class AuthServiceTest {
       then(userRepository).shouldHaveNoMoreInteractions();
       then(passwordEncoder).shouldHaveNoMoreInteractions();
       then(jwtTokenProvider).shouldHaveNoInteractions();
+      then(refreshTokenRepository).shouldHaveNoInteractions();
       then(redisRefreshTokenStore).shouldHaveNoInteractions();
     }
 
@@ -181,6 +187,7 @@ public class AuthServiceTest {
       then(userRepository).should().findByEmail(validRequest.email());
       then(passwordEncoder).should().matches(validRequest.password(), validUser.getPassword());
       then(jwtTokenProvider).shouldHaveNoMoreInteractions();
+      then(refreshTokenRepository).shouldHaveNoInteractions();
       then(redisRefreshTokenStore).shouldHaveNoInteractions();
     }
 
@@ -207,6 +214,7 @@ public class AuthServiceTest {
       then(userRepository).should().findByEmail(validRequest.email());
       then(passwordEncoder).should().matches(validRequest.password(), validUser.getPassword());
       then(jwtTokenProvider).shouldHaveNoMoreInteractions();
+      then(refreshTokenRepository).shouldHaveNoInteractions();
       then(redisRefreshTokenStore).shouldHaveNoInteractions();
     }
 
@@ -227,8 +235,13 @@ public class AuthServiceTest {
       given(userRepository.findByEmail(validRequest.email())).willReturn(Optional.of(validUser));
       given(passwordEncoder.matches(validRequest.password(), validUser.getPassword())).willReturn(
           true);
+      willDoNothing().given(refreshTokenRepository)
+          .deleteByUserPublicIdAndDeviceId(anyString(), anyString());
+      willDoNothing().given(redisRefreshTokenStore).delete(anyString(), anyString());
       given(jwtTokenProvider.issueTokenPair(anyString())).willReturn(expectedToken);
       given(jwtProperties.getRefreshToken()).willReturn(refreshTokenConfig);
+      given(refreshTokenRepository.save(any(RefreshToken.class))).willAnswer(
+          invocation -> invocation.getArgument(0));
       willDoNothing().given(redisRefreshTokenStore)
           .save(anyString(), anyString(), anyString(), any(Duration.class));
 
@@ -241,7 +254,12 @@ public class AuthServiceTest {
 
       then(userRepository).should().findByEmail(validRequest.email());
       then(passwordEncoder).should().matches(validRequest.password(), validUser.getPassword());
+      then(refreshTokenRepository).should()
+          .deleteByUserPublicIdAndDeviceId(validUser.getPublicId(), validRequest.deviceId());
+      then(redisRefreshTokenStore).should()
+          .delete(validUser.getPublicId(), validRequest.deviceId());
       then(jwtTokenProvider).should().issueTokenPair(validUser.getPublicId());
+      then(refreshTokenRepository).should().save(any(RefreshToken.class));
       then(redisRefreshTokenStore).should()
           .save(eq(validUser.getPublicId()), eq(validRequest.deviceId()), anyString(),
               any(Duration.class));
@@ -270,12 +288,15 @@ public class AuthServiceTest {
 
       then(jwtTokenProvider).should().extractPublicIdFromRefresh(validRefreshToken);
       then(redisRefreshTokenStore).shouldHaveNoInteractions();
+      then(refreshTokenRepository).shouldHaveNoInteractions();
     }
 
     @Test
-    void Redis에_저장된_토큰이_없으면_예외를_던진다() {
+    void Redis와_DB에_모두_저장된_토큰이_없으면_예외를_던진다() {
       given(jwtTokenProvider.extractPublicIdFromRefresh(validRefreshToken)).willReturn(publicId);
       given(redisRefreshTokenStore.find(publicId, deviceId)).willReturn(Optional.empty());
+      given(refreshTokenRepository.findValidTokenByUserPublicIdAndDeviceId(
+          eq(publicId), eq(deviceId), any())).willReturn(Optional.empty());
 
       assertThatThrownBy(() -> authService.refresh(validRequest))
           .isInstanceOf(BusinessException.class)
@@ -284,11 +305,13 @@ public class AuthServiceTest {
 
       then(jwtTokenProvider).should().extractPublicIdFromRefresh(validRefreshToken);
       then(redisRefreshTokenStore).should().find(publicId, deviceId);
+      then(refreshTokenRepository).should()
+          .findValidTokenByUserPublicIdAndDeviceId(eq(publicId), eq(deviceId), any());
     }
 
     @Test
     void 토큰_해시가_일치하지_않으면_예외를_던진다() {
-      String storedHash = "storedHash";
+      String storedHash = "wrongHash123";
 
       given(jwtTokenProvider.extractPublicIdFromRefresh(validRefreshToken)).willReturn(publicId);
       given(redisRefreshTokenStore.find(publicId, deviceId)).willReturn(Optional.of(storedHash));
@@ -300,6 +323,7 @@ public class AuthServiceTest {
 
       then(jwtTokenProvider).should().extractPublicIdFromRefresh(validRefreshToken);
       then(redisRefreshTokenStore).should().find(publicId, deviceId);
+      then(refreshTokenRepository).shouldHaveNoMoreInteractions();
     }
 
     @Test
@@ -310,8 +334,25 @@ public class AuthServiceTest {
       TokenResponseDTO expectedToken = TokenResponseDTO.of("newAccessToken",
           validRefreshToken, 3_600_000L);
 
+      User mockUser = User.builder()
+          .email("test@example.com")
+          .password("encodedPassword")
+          .isPrivacyAgreed(true)
+          .status(UserStatus.ACTIVE)
+          .role(UserRole.USER)
+          .build();
+
+      RefreshToken mockRefreshToken = RefreshToken.builder()
+          .user(mockUser)
+          .deviceId(deviceId)
+          .tokenHash(expectedHash)
+          .expiresAt(java.time.LocalDateTime.now().plusDays(7))
+          .build();
+
       given(jwtTokenProvider.extractPublicIdFromRefresh(validRefreshToken)).willReturn(publicId);
       given(redisRefreshTokenStore.find(publicId, deviceId)).willReturn(Optional.of(expectedHash));
+      given(refreshTokenRepository.findValidTokenByUserPublicIdAndDeviceId(
+          eq(publicId), eq(deviceId), any())).willReturn(Optional.of(mockRefreshToken));
       given(jwtTokenProvider.reissueAccessToken(validRefreshToken))
           .willReturn(expectedToken);
 
@@ -322,6 +363,8 @@ public class AuthServiceTest {
 
       then(jwtTokenProvider).should().extractPublicIdFromRefresh(validRefreshToken);
       then(redisRefreshTokenStore).should().find(publicId, deviceId);
+      then(refreshTokenRepository).should()
+          .findValidTokenByUserPublicIdAndDeviceId(eq(publicId), eq(deviceId), any());
       then(jwtTokenProvider).should().reissueAccessToken(validRefreshToken);
     }
   }
@@ -350,28 +393,36 @@ public class AuthServiceTest {
           .satisfies(ex -> assertThat(((BusinessException) ex).getErrorStatus())
               .isEqualTo(AuthErrorStatus.ACCESS_DENIED));
 
+      then(refreshTokenRepository).shouldHaveNoInteractions();
       then(redisRefreshTokenStore).shouldHaveNoInteractions();
     }
 
     @Test
     void 단일_디바이스에서_로그아웃한다() {
       LogoutRequestDTO request = new LogoutRequestDTO(false, deviceId);
+      willDoNothing().given(refreshTokenRepository)
+          .deleteByUserPublicIdAndDeviceId(publicId, deviceId);
       willDoNothing().given(redisRefreshTokenStore).delete(publicId, deviceId);
 
       authService.logout(authenticatedUser, request);
 
+      then(refreshTokenRepository).should().deleteByUserPublicIdAndDeviceId(publicId, deviceId);
       then(redisRefreshTokenStore).should().delete(publicId, deviceId);
+      then(refreshTokenRepository).shouldHaveNoMoreInteractions();
       then(redisRefreshTokenStore).shouldHaveNoMoreInteractions();
     }
 
     @Test
     void 모든_디바이스에서_로그아웃한다() {
       LogoutRequestDTO request = new LogoutRequestDTO(true, deviceId);
+      willDoNothing().given(refreshTokenRepository).deleteAllByUserPublicId(publicId);
       willDoNothing().given(redisRefreshTokenStore).deleteAllByUserPublicId(publicId);
 
       authService.logout(authenticatedUser, request);
 
+      then(refreshTokenRepository).should().deleteAllByUserPublicId(publicId);
       then(redisRefreshTokenStore).should().deleteAllByUserPublicId(publicId);
+      then(refreshTokenRepository).shouldHaveNoMoreInteractions();
       then(redisRefreshTokenStore).shouldHaveNoMoreInteractions();
     }
   }

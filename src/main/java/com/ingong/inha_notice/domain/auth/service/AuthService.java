@@ -18,9 +18,11 @@ import com.ingong.inha_notice.api.v1.auth.dto.response.jwt.TokenResponseDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.response.local.JoinResponseDTO;
 import com.ingong.inha_notice.api.v1.auth.dto.response.local.LoginResponseDTO;
 import com.ingong.inha_notice.api.v1.user.dto.response.UserInfoResponseDTO;
+import com.ingong.inha_notice.domain.auth.entity.RefreshToken;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtProperties;
 import com.ingong.inha_notice.domain.auth.infra.jwt.JwtTokenProvider;
 import com.ingong.inha_notice.domain.auth.infra.redis.RedisRefreshTokenStore;
+import com.ingong.inha_notice.domain.auth.repository.RefreshTokenRepository;
 import com.ingong.inha_notice.domain.auth.status.AuthErrorStatus;
 import com.ingong.inha_notice.domain.user.entity.User;
 import com.ingong.inha_notice.domain.user.enums.UserStatus;
@@ -31,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HexFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -47,6 +50,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
   private final RedisRefreshTokenStore redisRefreshTokenStore;
+  private final RefreshTokenRepository refreshTokenRepository;
   private final JwtProperties jwtProperties;
 
   @Transactional
@@ -74,6 +78,7 @@ public class AuthService {
     return new JoinResponseDTO(savedUser.getEmail(), savedUser.getIsPrivacyAgreed());
   }
 
+  @Transactional
   public LoginResponseDTO login(LoginRequestDTO dto) {
     User user = userRepository.findByEmail(dto.email())
         .orElseThrow(() -> new BusinessException(AuthErrorStatus.LOGIN_FAILED));
@@ -86,11 +91,27 @@ public class AuthService {
       throw new BusinessException(AuthErrorStatus.LOGIN_FAILED);
     }
 
+    // 기존 디바이스의 토큰 삭제 (DB + Redis)
+    refreshTokenRepository.deleteByUserPublicIdAndDeviceId(user.getPublicId(), dto.deviceId());
+    redisRefreshTokenStore.delete(user.getPublicId(), dto.deviceId());
+
     TokenResponseDTO tokenResponseDTO = jwtTokenProvider.issueTokenPair(user.getPublicId());
 
-    // Refresh token을 Redis에 저장
+    // Refresh token 해시 생성
     String refreshTokenHash = hashToken(tokenResponseDTO.refreshToken());
     Duration ttl = Duration.ofMillis(jwtProperties.getRefreshToken().getExpiration());
+    LocalDateTime expiresAt = LocalDateTime.now().plus(ttl);
+
+    // DB에 저장
+    RefreshToken refreshToken = RefreshToken.builder()
+        .user(user)
+        .deviceId(dto.deviceId())
+        .tokenHash(refreshTokenHash)
+        .expiresAt(expiresAt)
+        .build();
+    refreshTokenRepository.save(refreshToken);
+
+    // Redis에 저장 (캐싱)
     redisRefreshTokenStore.save(user.getPublicId(), dto.deviceId(), refreshTokenHash, ttl);
 
     UserInfoResponseDTO userInfo = UserInfoResponseDTO.from(user);
@@ -98,6 +119,7 @@ public class AuthService {
     return new LoginResponseDTO(tokenResponseDTO, userInfo);
   }
 
+  @Transactional
   public TokenResponseDTO refresh(RefreshTokenRequestDTO dto) {
     // 1. Refresh token 검증 및 publicId 추출
     String publicId;
@@ -107,20 +129,41 @@ public class AuthService {
       throw new BusinessException(AuthErrorStatus.INVALID_REFRESH_TOKEN);
     }
 
-    // 2. Redis에서 저장된 refresh token hash 조회
-    String storedHash = redisRefreshTokenStore.find(publicId, dto.deviceId())
-        .orElseThrow(() -> new BusinessException(AuthErrorStatus.REFRESH_TOKEN_NOT_FOUND));
-
-    // 3. 요청받은 refresh token을 해시화하여 Redis 값과 비교
     String requestHash = hashToken(dto.refreshToken());
+
+    // 2. Redis에서 조회 시도
+    String storedHash = redisRefreshTokenStore.find(publicId, dto.deviceId())
+        .orElseGet(() -> {
+          // 3. Redis miss → DB 조회 (fallback)
+          RefreshToken refreshToken = refreshTokenRepository
+              .findValidTokenByUserPublicIdAndDeviceId(publicId, dto.deviceId(),
+                  LocalDateTime.now())
+              .orElseThrow(() -> new BusinessException(AuthErrorStatus.REFRESH_TOKEN_NOT_FOUND));
+
+          // 4. DB에서 조회한 토큰을 Redis에 다시 캐싱
+          Duration ttl = Duration.ofMillis(jwtProperties.getRefreshToken().getExpiration());
+          redisRefreshTokenStore.save(publicId, dto.deviceId(), refreshToken.getTokenHash(), ttl);
+
+          return refreshToken.getTokenHash();
+        });
+
+    // 5. 요청받은 refresh token을 해시화하여 저장된 값과 비교
     if (!storedHash.equals(requestHash)) {
       throw new BusinessException(AuthErrorStatus.INVALID_REFRESH_TOKEN);
     }
 
-    // 4. 새로운 access token 발급 (refresh token 재사용)
+    // 6. DB에서 토큰 조회 및 lastUsedAt 업데이트
+    RefreshToken refreshToken = refreshTokenRepository
+        .findValidTokenByUserPublicIdAndDeviceId(publicId, dto.deviceId(), LocalDateTime.now())
+        .orElseThrow(() -> new BusinessException(AuthErrorStatus.REFRESH_TOKEN_NOT_FOUND));
+
+    refreshToken.updateLastUsedAt();
+
+    // 7. 새로운 access token 발급 (refresh token 재사용)
     return jwtTokenProvider.reissueAccessToken(dto.refreshToken());
   }
 
+  @Transactional
   public void logout(AuthenticatedUser authenticatedUser, LogoutRequestDTO logoutRequestDTO) {
     if (authenticatedUser == null) {
       throw new BusinessException(AuthErrorStatus.ACCESS_DENIED);
@@ -129,10 +172,12 @@ public class AuthService {
     String publicId = authenticatedUser.getPublicId();
 
     if (logoutRequestDTO.isAllDevices()) {
-      // 모든 디바이스에서 로그아웃
+      // 모든 디바이스에서 로그아웃 (DB + Redis)
+      refreshTokenRepository.deleteAllByUserPublicId(publicId);
       redisRefreshTokenStore.deleteAllByUserPublicId(publicId);
     } else {
-      // 특정 디바이스만 로그아웃
+      // 특정 디바이스만 로그아웃 (DB + Redis)
+      refreshTokenRepository.deleteByUserPublicIdAndDeviceId(publicId, logoutRequestDTO.deviceId());
       redisRefreshTokenStore.delete(publicId, logoutRequestDTO.deviceId());
     }
   }
