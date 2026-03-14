@@ -21,8 +21,6 @@ import com.ingong.inha_notice.domain.auth.service.AuthService;
 import com.ingong.inha_notice.domain.auth.status.AuthSuccessStatus;
 import com.ingong.inha_notice.global.api.dto.ApiResponseDTO;
 import com.ingong.inha_notice.global.security.auth.AuthenticatedUser;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -61,8 +59,7 @@ public class AuthController implements AuthApi {
 
   @Override
   public ResponseEntity<ApiResponseDTO<TokenResponseDTO>> refresh(
-      RefreshTokenRequestDTO refreshTokenRequestDTO, HttpServletRequest request,
-      HttpServletResponse response) {
+      RefreshTokenRequestDTO refreshTokenRequestDTO) {
 
     TokenResponseDTO responseDTO = authService.refresh(refreshTokenRequestDTO);
     AuthSuccessStatus status = AuthSuccessStatus.TOKEN_REFRESH_SUCCESS;

@@ -20,8 +20,6 @@ import com.ingong.inha_notice.api.v1.auth.dto.response.local.LoginResponseDTO;
 import com.ingong.inha_notice.global.api.dto.ApiResponseDTO;
 import com.ingong.inha_notice.global.security.auth.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,8 +41,7 @@ public interface AuthApi {
 
   @PostMapping("/refresh")
   ResponseEntity<ApiResponseDTO<TokenResponseDTO>> refresh(
-      @RequestBody @Valid RefreshTokenRequestDTO refreshTokenRequestDTO,
-      HttpServletRequest request, HttpServletResponse response
+      @RequestBody @Valid RefreshTokenRequestDTO refreshTokenRequestDTO
   );
 
   @PostMapping("/local/logout")
