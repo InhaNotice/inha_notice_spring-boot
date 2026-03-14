@@ -24,6 +24,7 @@ import com.ingong.inha_notice.global.security.auth.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,7 +60,7 @@ public class AuthController implements AuthApi {
 
   @Override
   public ResponseEntity<ApiResponseDTO<TokenResponseDTO>> refresh(
-      RefreshTokenRequestDTO refreshTokenRequestDTO) {
+      @RequestBody @Valid RefreshTokenRequestDTO refreshTokenRequestDTO) {
 
     TokenResponseDTO responseDTO = authService.refresh(refreshTokenRequestDTO);
     AuthSuccessStatus status = AuthSuccessStatus.TOKEN_REFRESH_SUCCESS;
@@ -70,12 +71,13 @@ public class AuthController implements AuthApi {
   }
 
   @Override
-  public ApiResponseDTO<Void> logout(LogoutRequestDTO logoutRequestDTO,
-      AuthenticatedUser authenticatedUser) {
+  public ApiResponseDTO<Void> logout(
+      @RequestBody @Valid LogoutRequestDTO logoutRequestDTO,
+      @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
 
     authService.logout(authenticatedUser, logoutRequestDTO);
     AuthSuccessStatus status = AuthSuccessStatus.LOGOUT_SUCCESS;
 
-    return ApiResponseDTO.success(status, null);
+    return ApiResponseDTO.success(status);
   }
 }
