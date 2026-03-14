@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the root directory or at
  * https://opensource.org/license/mit
  * Author: Junho Kim
- * Latest Updated Date: 2026-02-21
+ * Latest Updated Date: 2026-03-14
  */
 
 package com.ingong.inha_notice.global.security;
@@ -44,9 +44,9 @@ public class SecurityConfig {
       "/swagger-ui.html",
   };
   private static final String[] AUTH_URLS = {
-      "/api/v1/auth/join",
-      "/api/v1/auth/login",
-      "/api/v1/auth/refresh",
+      "/api/v1/auth/local/join",
+      "/api/v1/auth/local/login",
+      "/api/v1/auth/local/refresh",
   };
 
   @Bean
