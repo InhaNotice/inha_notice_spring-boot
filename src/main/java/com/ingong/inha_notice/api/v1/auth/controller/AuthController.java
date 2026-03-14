@@ -74,7 +74,7 @@ public class AuthController implements AuthApi {
 
   @Override
   public ApiResponseDTO<Void> logout(LogoutRequestDTO logoutRequestDTO,
-      AuthenticatedUser authenticatedUser, HttpServletResponse response) {
+      AuthenticatedUser authenticatedUser) {
 
     authService.logout(authenticatedUser, logoutRequestDTO);
     AuthSuccessStatus status = AuthSuccessStatus.LOGOUT_SUCCESS;

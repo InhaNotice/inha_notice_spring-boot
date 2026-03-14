@@ -50,7 +50,6 @@ public interface AuthApi {
   @PostMapping("/local/logout")
   ApiResponseDTO<Void> logout(
       @RequestBody LogoutRequestDTO logoutRequestDTO,
-      @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
-      HttpServletResponse response
+      @AuthenticationPrincipal AuthenticatedUser authenticatedUser
   );
 }
